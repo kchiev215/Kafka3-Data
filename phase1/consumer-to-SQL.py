@@ -1,5 +1,7 @@
 from kafka import KafkaConsumer, TopicPartition
 from json import loads
+import mysql.connector
+
 
 class XactionConsumer:
     def __init__(self):
@@ -19,6 +21,18 @@ class XactionConsumer:
 
         #Go back to the readme.
 
+    conn = mysql.connector.connect(
+        host="localhost",
+        user="thina",
+        password="thina215",
+        database="kafka"
+    )
+
+    cursor = conn.cursor()
+
+    cursor.execute("CREATE TABLE IF NOT EXISTS transaction (custid INT PRIMARY KEY NOT NULL, \
+                      type VARCHAR(255) NOT NULL, date INT, amt INT)")
+
     def handleMessages(self):
         for message in self.consumer:
             message = message.value
@@ -32,6 +46,11 @@ class XactionConsumer:
             else:
                 self.custBalances[message['custid']] -= message['amt']
             print(self.custBalances)
+
+            messages = (message['custid'], message['type'], message['date'], message['amt'])
+            insert_data = 'INSERT INTO Transaction (custid, type, date, amt) VALUES (?, ?, ?, ?)'
+            self.cursor.execute(insert_data, messages)
+            self.conn.commit()
 
 if __name__ == "__main__":
     c = XactionConsumer()

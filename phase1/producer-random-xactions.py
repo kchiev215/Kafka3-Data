@@ -1,3 +1,4 @@
+import sqlite3
 from time import sleep
 from json import dumps
 from kafka import KafkaProducer
@@ -25,6 +26,7 @@ class Producer:
             print('sent', data)
             self.producer.send('bank-customer-events', value=data)
             sleep(1)
+
 
 if __name__ == "__main__":
     p = Producer()
